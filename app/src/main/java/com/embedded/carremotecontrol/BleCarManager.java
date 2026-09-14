@@ -1,4 +1,4 @@
-package com.embedded.dualcarcontroller;
+package com.embedded.carremotecontrol;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;

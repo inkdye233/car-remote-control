@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.embedded.dualcarcontroller"
+    namespace = "com.embedded.carremotecontrol"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.embedded.dualcarcontroller"
+        applicationId = "com.embedded.carremotecontrol"
         minSdk = 23
         targetSdk = 34
         versionCode = 102

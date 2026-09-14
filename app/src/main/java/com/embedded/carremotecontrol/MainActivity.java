@@ -1,4 +1,4 @@
-package com.embedded.dualcarcontroller;
+package com.embedded.carremotecontrol;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

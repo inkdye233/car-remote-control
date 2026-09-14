@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "DualBleCarNative"
+rootProject.name = "CarRemoteControl"
 include(":app")

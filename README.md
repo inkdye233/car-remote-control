@@ -1,4 +1,4 @@
-# 小车遥控
+# 小车遥控 (CarRemoteControl)
 
 基于低功耗蓝牙（BLE）的原生 Android 遥控应用。可在同一部手机上同时连接小车的前轮与后轮驱动单元，并分别或同步下发控制指令。
 
@@ -20,7 +20,7 @@
 | 运行平台 | Android 6.0（API 23）及以上 |
 | 编译 / 目标 SDK | 34 |
 | 构建工具 | JDK 17、Android SDK（含 platform 34） |
-| 应用 ID | `com.embedded.dualcarcontroller` |
+| 应用 ID | `com.embedded.carremotecontrol` |
 | 依赖 | AndroidX、Material Components 1.12.0 |
 
 设备需支持蓝牙 4.0 及以上（BLE），应用在清单中将 BLE 声明为必需特性。
@@ -86,7 +86,7 @@ BLE 服务与特征：
 
 ```
 app/src/main/
-├── java/com/embedded/dualcarcontroller/
+├── java/com/embedded/carremotecontrol/
 │   ├── MainActivity.java      界面与交互逻辑
 │   ├── BleCarManager.java     BLE 扫描、连接与读写队列
 │   └── CarProtocol.java       协议常量与报文编解码

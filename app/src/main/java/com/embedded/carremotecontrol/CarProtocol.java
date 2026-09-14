@@ -1,4 +1,4 @@
-package com.embedded.dualcarcontroller;
+package com.embedded.carremotecontrol;
 
 import java.util.Locale;
 import java.util.UUID;
