@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#F4F7FB</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_raised">#EEF3F9</color>
+    <color name="surface_blue">#EAF1FF</color>
+    <color name="border">#E0E7F0</color>
+    <color name="border_strong">#C7D2E2</color>
+    <color name="text">#17233A</color>
+    <color name="text_muted">#5E6B7E</color>
+    <color name="accent">#2563EB</color>
+    <color name="accent_dark">#1746A2</color>
+    <color name="accent_ink">#FFFFFF</color>
+    <color name="success">#168A53</color>
+    <color name="success_soft">#E8F7EF</color>
+    <color name="danger">#C92F37</color>
+    <color name="danger_soft">#FFF0F1</color>
+    <color name="white">#FFFFFF</color>
+    <color name="log_bg">#101827</color>
+    <color name="log_text">#C7D4E8</color>
+    <color name="icon_background">#2563EB</color>
+</resources>

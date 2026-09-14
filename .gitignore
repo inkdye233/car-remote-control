@@ -1,0 +1,12 @@
+/.gradle/
+/.idea/
+/local.properties
+**/build/
+*.iml
+
+# Android build outputs & signing (added for public release)
+*.apk
+*.aab
+*.keystore
+*.jks
+captures/
