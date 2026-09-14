@@ -1,0 +1,14 @@
+# 统一换行符约定：仓库内一律存 LF。
+# 不加这个文件时，Windows 上编辑文件容易在 diff 里产生整文件换行符变动，
+# 把真正的改动淹没掉（本项目曾因此出现 1108 行的假 diff，实际只改了 11 行）。
+* text=auto eol=lf
+
+# 二进制资源不做换行符转换
+*.png binary
+*.jpg binary
+*.jar binary
+*.keystore binary
+*.jks binary
+
+# Windows 批处理脚本保留 CRLF
+*.bat text eol=crlf

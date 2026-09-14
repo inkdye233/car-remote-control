@@ -221,7 +221,7 @@ public final class BleCarManager {
         for (Map.Entry<String, Connection> entry : connections.entrySet()) {
             if (!entry.getKey().equals(slot)
                     && entry.getValue().device.getAddress().equals(device.address)) {
-                log("error", "该设备已经连接为 " + entry.getKey() + "车", device.name);
+                log("error", "该设备已经连接为 " + CarProtocol.slotDisplayName(entry.getKey()), device.name);
                 return false;
             }
         }
@@ -229,7 +229,7 @@ public final class BleCarManager {
         Connection connection = new Connection(slot, device.device, device.name);
         connections.put(slot, connection);
         emitSlot(slot);
-        log("info", "正在连接 " + slot + "车", device.name);
+        log("info", "正在连接 " + CarProtocol.slotDisplayName(slot), device.name);
         stopScan();
         try {
             BluetoothGattCallback callback = callbackFor(connection);
@@ -242,7 +242,7 @@ public final class BleCarManager {
             if (connection.gatt == null) throw new IllegalStateException("connectGatt 返回空连接");
             return true;
         } catch (Exception error) {
-            log("error", slot + "车连接失败", safeMessage(error));
+            log("error", CarProtocol.slotDisplayName(slot) + "连接失败", safeMessage(error));
             removeConnection(slot, true);
             emitSlot(slot);
             return false;
@@ -266,7 +266,7 @@ public final class BleCarManager {
                     connection.connected = true;
                     connection.connecting = true;
                     emitSlot(connection.slot);
-                    log("info", connection.slot + "车链路已建立", connection.name);
+                    log("info", CarProtocol.slotDisplayName(connection.slot) + "链路已建立", connection.name);
                     if (!gatt.discoverServices()) {
                         failConnection(connection, "无法启动服务发现");
                     }
@@ -277,7 +277,7 @@ public final class BleCarManager {
                     connection.connecting = false;
                     connection.writable = null;
                     emitSlot(connection.slot);
-                    log("error", connection.slot + "车连接已断开",
+                    log("error", CarProtocol.slotDisplayName(connection.slot) + "连接已断开",
                             status == BluetoothGatt.GATT_SUCCESS ? connection.name : "GATT " + status);
                     try {
                         gatt.close();
@@ -322,7 +322,7 @@ public final class BleCarManager {
                 connection.connecting = false;
                 connection.connected = true;
                 emitSlot(connection.slot);
-                log("success", connection.slot + "车连接成功",
+                log("success", CarProtocol.slotDisplayName(connection.slot) + "连接成功",
                         connection.name + " / " + writable.getUuid());
             }
 
@@ -349,7 +349,7 @@ public final class BleCarManager {
         connection.connected = false;
         connection.connecting = false;
         connection.writable = null;
-        log("error", connection.slot + "车连接失败", message);
+        log("error", CarProtocol.slotDisplayName(connection.slot) + "连接失败", message);
         emitSlot(connection.slot);
         try {
             if (connection.gatt != null) connection.gatt.disconnect();
@@ -434,7 +434,7 @@ public final class BleCarManager {
             }
         }
         if (!launched) {
-            log("error", connection.slot + "车写入失败", label);
+            log("error", CarProtocol.slotDisplayName(connection.slot) + "写入失败", label);
             return;
         }
 
@@ -443,11 +443,11 @@ public final class BleCarManager {
                 CountDownLatch latch = connection.writeLatch;
                 long timeoutMs = urgent ? 250 : 2000;
                 if (latch != null && !latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-                    log("error", connection.slot + "车写入超时", label);
+                    log("error", CarProtocol.slotDisplayName(connection.slot) + "写入超时", label);
                     return;
                 }
                 if (connection.writeStatus != BluetoothGatt.GATT_SUCCESS) {
-                    log("error", connection.slot + "车写入失败", "GATT " + connection.writeStatus);
+                    log("error", CarProtocol.slotDisplayName(connection.slot) + "写入失败", "GATT " + connection.writeStatus);
                     return;
                 }
             } catch (InterruptedException error) {
@@ -464,7 +464,7 @@ public final class BleCarManager {
                 return;
             }
         }
-        log("tx", connection.slot + "车 " + label, CarProtocol.toHex(packet));
+        log("tx", CarProtocol.slotDisplayName(connection.slot) + " " + label, CarProtocol.toHex(packet));
     }
 
     @SuppressWarnings("deprecation")

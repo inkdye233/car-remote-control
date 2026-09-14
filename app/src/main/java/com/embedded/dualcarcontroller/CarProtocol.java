@@ -17,6 +17,15 @@ public final class CarProtocol {
 
     private CarProtocol() {}
 
+    /**
+     * 槽位标识（A/B）→ 界面与日志显示名。
+     * A 对应前轮，B 对应后轮；两处调用方（MainActivity / BleCarManager）共用此映射，
+     * 避免显示名分散在多处而改不干净。
+     */
+    public static String slotDisplayName(String slot) {
+        return "B".equals(slot) ? "后轮" : "前轮";
+    }
+
     private static byte[] bytes(int... values) {
         byte[] result = new byte[values.length];
         for (int index = 0; index < values.length; index++) {

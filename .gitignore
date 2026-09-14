@@ -16,3 +16,6 @@ captures/
 
 # 开发日志（仅本地保留，不公开到仓库）
 BUGLOG.md
+
+# 本机构建辅助脚本（硬编码本机 JDK/SDK 路径，仅本地使用）
+build-local.bat

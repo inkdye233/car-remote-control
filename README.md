@@ -1,87 +1,99 @@
-# 双车遥控（原生 Android）
+# 小车遥控
 
-不依赖 HBuilderX、DCloud 云打包或第三方 BLE 库的原生 Android 应用。
+基于低功耗蓝牙（BLE）的原生 Android 遥控应用。可在同一部手机上同时连接小车的前轮与后轮驱动单元，并分别或同步下发控制指令。
 
-## 环境
+## 功能特性
 
-- Android Studio: `E:\Program Files\Android\Android Studio`
-- Android SDK: `E:\AndroidSDK`
-- Gradle 用户目录: `E:\Program Files\Android\GradleUserHome`
-- 包名: `com.embedded.dualcarcontroller`
-- minSdk 23 / targetSdk 34 / compileSdk 34
+- 同时维护两条独立的 GATT 连接，分别对应前轮与后轮，互不干扰
+- 扫描时按 `FFF0` 服务 UUID 过滤 BLE 广播，仅列出声明该服务的设备；连接后再次校验服务与可写特征，不合规设备不会进入控制流程
+- 写入特征按 `FFF2`（首选）→ `FFF1`（备用）→ 该服务下任一可写特征的顺序选择
+- 每条连接使用独立串行写队列，写间隔约 24 ms
+- 支持前轮、后轮单独控制与前后同步控制
+- 控制指令：左转、右转、加速、倒车、保持、推行、全部急停
+- 转向与倒车为长按连发，松开后自动补发停止指令
+- 应用切至后台时自动下发安全停止
 
-## 功能
+## 环境要求
 
-- 同时维护 A、B 两条独立 GATT 连接
-- 扫描 BLE 设备并验证 FFF0 服务
-- 优先写入 FFF2，备用 FFF1
-- 每条连接使用独立串行写队列
-- 停止类指令走独立抢占通道，保证不被积压队列延迟
-- A、B、A+B 同步控制
-- 左右转长按连发、倒车、加速、停止、推行、全部急停
-- 切后台自动发送安全停止
+| 项目 | 要求 |
+|---|---|
+| 运行平台 | Android 6.0（API 23）及以上 |
+| 编译 / 目标 SDK | 34 |
+| 构建工具 | JDK 17、Android SDK（含 platform 34） |
+| 应用 ID | `com.embedded.dualcarcontroller` |
+| 依赖 | AndroidX、Material Components 1.12.0 |
 
-## 倒车
-
-倒车指令已接入，`reverse` 按键绑定 `CarProtocol.REVERSE`，按下时档位置为 `-1`。长按期间由 `reverseRunnable` 每 200ms 重发一次倒车指令，机制与左右转的连发同类。
-
-实际报文序列：
-
-1. **按下瞬间**：发送 1 条 `REVERSE` —— `55 0A FF FF FF FF 02 00 00 00 5C 5E`。
-2. **按住期间**：`reverseRunnable` 每 200ms 重发同一条 `REVERSE`，日志标签「倒车」。
-3. **抬起或滑动取消**：取消倒车循环后补发 1 条 `HOLD_AND_STOP` —— `55 0A FF FF FF FF 00 00 00 00 5D E6`，日志标签「倒车停止」。
-
-倒车期间**不会**下发 `HOLD_AND_STOP`：`holdRunnable`（前进档的 200ms 心跳）会显式跳过正在倒车的车，避免「保持/停止」报文与倒车互相打架。任何停止路径（停止、推行、全部急停、切后台）都会先取消倒车循环，防止急停后仍继续下发 `REVERSE`。
-
-目标为 A+B 时，上述每条报文都会分别投递到两条连接，各自走独立的串行写队列（写间隔 24ms）。
-
-## 停止类指令通道（急停 / 停止 / 倒车停止 / 安全停止 / 断开前停止）
-
-**为什么需要单独通道**：写队列是单线程无界队列。若链路进入「僵尸」状态（`connected` 仍为 `true`，但实际已不回 ACK，系统尚未报断），`ready()` 只查标志位、察觉不到链路已死，`send()` 会持续入队；而 `WRITE_TYPE_DEFAULT` 的写入要等回执，每条最多阻塞 2 秒。此时按住前进/转向/倒车会让队列持续积压（心跳 200ms + 转向 150ms + 倒车 200ms 并存时约 16 条/秒），排在队尾的急停会被延迟数十秒。
-
-**实现**（`BleCarManager`）：
-
-- `writeQueue` 用直接 `new ThreadPoolExecutor` 构造（而非 `Executors.newSingleThreadExecutor()`），以获得队列引用；写线程命名 `ble-write-<slot>`。
-- `sendUrgent()` 相对 `send()` 多三步：`getQueue().clear()` 丢弃积压的普通指令 → 取出 `writeLatch` 并 `countDown()` **软打断**正在等待回执的那条写（不中断线程，避免影响 GATT 栈；被中断的写会以 `GATT_FAILURE` 提前返回并记一条错误日志）→ 再入队。
-- `WRITE_TYPE_DEFAULT` 的等待超时按紧急度区分：**急停类 250 ms**、普通 2000 ms。
-- 急停类写入若 `launchWrite` 失败会重试 3 次（间隔 60 ms），避免因上一条写刚被软打断、GATT 短暂繁忙而静默丢弃停止包。
-
-**接入点**：`MainActivity.stopSlots()`（覆盖「停止」「全部急停」「倒车停止」）、`BleCarManager.safeStopAll()`（切后台）、断开前的停止包。
-
-净效果：急停从「可能排在数十秒积压之后」变为**约 250 ms 内必然下发**。
-
-## 连发定时器一览
-
-| 循环 | 周期 | 报文 | 取消方式 |
-|---|---|---|---|
-| `turnRunnable` | 150 ms | 当前转向包 | `stopTurn()` → `removeCallbacks` |
-| `holdRunnable` | 200 ms | `HOLD_AND_STOP`（前进档心跳），显式跳过正在倒车的车 | `resetMotion()` / `onStop` |
-| `reverseRunnable` | 200 ms | `REVERSE` | `stopReverse()` |
-
-三个循环都由各自命名的 `Runnable` 字段持有并被显式取消。**注意不要再往按键监听器里写匿名自调度 `Runnable`**：早前转向连发就是匿名实现的，`stopTurn()` 无法取消它，于是「快速松开再按下」时旧循环会复活并与新循环并存，转向指令速率翻倍（已修）。
+设备需支持蓝牙 4.0 及以上（BLE），应用在清单中将 BLE 声明为必需特性。
 
 ## 构建
 
-用 Android Studio 打开本目录，或在 PowerShell 执行：
+### 准备
 
-```powershell
-$env:JAVA_HOME='E:\Program Files\Android\Android Studio\jbr'
-$env:GRADLE_USER_HOME='E:\Program Files\Android\GradleUserHome'
-.\gradlew.bat assembleDebug
+需要 JDK 17 与 Android SDK（含 platform 34）。SDK 位置通过以下任一方式指定：
+
+- **Android Studio**：打开项目目录时会自动生成 `local.properties`，无需手动配置。
+- **命令行**：设置环境变量 `ANDROID_HOME`，或在项目根目录创建 `local.properties`：
+
+  ```properties
+  sdk.dir=/path/to/Android/Sdk
+  ```
+
+  `local.properties` 记录的是本机路径，已在 `.gitignore` 中排除，请勿提交。
+
+### 构建命令
+
+```bash
+# 调试版
+./gradlew assembleDebug
+
+# 发布版
+./gradlew assembleRelease
 ```
 
-也可以直接双击或运行 `build-local.bat`，它会固定使用 E 盘的 JDK、SDK 和 Gradle 缓存。
+Windows 环境请使用 `gradlew.bat`，在 cmd 或 PowerShell 中执行（Git Bash 下直接运行 `./gradlew` 会因路径转换问题报 `ClassNotFoundException: GradleWrapperMain`）。
 
-APK 输出：`app\build\outputs\apk\debug\app-debug.apk`
+产物路径：
 
-构建耗时参考：冷编译约 40 s ~ 1'40"，增量约 12 s。
+| 版本 | 路径 |
+|---|---|
+| 调试版 | `app/build/outputs/apk/debug/app-debug.apk` |
+| 发布版 | `app/build/outputs/apk/release/app-release.apk` |
 
-几点注意：
+说明：调试版与发布版为两个独立产物，重新构建其中一个不会更新另一个。发布版使用调试签名配置，可直接安装，但不适用于应用商店上架。
 
-- **debug 与 release 是两个独立产物**，重编一个不会更新另一个。用户装的通常是 release，改完代码别只编 debug。
-- 若通过自动化/非交互 shell 调用 wrapper 却**看不到任何输出、也拿不到退出码**（看起来像"秒退成功"，实际根本没构建），改用 Git Bash 并先 `cd` 到项目目录再执行。
-- APK 是 **multidex**（`classes.dex` / `classes2.dex` / `classes3.dex`，`MainActivity` 在 **classes3.dex**）。若要做 dex 层面的改动校验，必须**合并全部 dex 再搜**，只查 `classes.dex` 会误判为"改动没打进包"：
-  ```bash
-  unzip -o -q app-release.apk "*.dex" -d /tmp/chk && cat /tmp/chk/*.dex > /tmp/chk/all.bin
-  grep -ac "新增的字段或方法名" /tmp/chk/all.bin    # ≥1 即已打入
-  ```
+## 通信协议
+
+BLE 服务与特征：
+
+| 用途 | UUID |
+|---|---|
+| 服务 | `0000fff0-0000-1000-8000-00805f9b34fb` |
+| 写入特征（首选） | `0000fff2-0000-1000-8000-00805f9b34fb` |
+| 写入特征（备用） | `0000fff1-0000-1000-8000-00805f9b34fb` |
+
+控制指令为 12 字节定长报文：
+
+| 指令 | 报文（十六进制） |
+|---|---|
+| 左转 | `55 0A FD FB FF FF 00 00 00 00 99 FF` |
+| 右转 | `55 0A 01 FA 00 02 00 00 00 00 FF F5` |
+| 加速 | `55 0A 00 52 01 FD 00 00 00 00 02 36` |
+| 倒车 | `55 0A FF FF FF FF 02 00 00 00 5C 5E` |
+| 保持 / 停止 | `55 0A FF FF FF FF 00 00 00 00 5D E6` |
+| 推行 | `55 0A FF FF FF FF FE 10 00 00 00 64 E6` |
+
+## 项目结构
+
+```
+app/src/main/
+├── java/com/embedded/dualcarcontroller/
+│   ├── MainActivity.java      界面与交互逻辑
+│   ├── BleCarManager.java     BLE 扫描、连接与读写队列
+│   └── CarProtocol.java       协议常量与报文编解码
+├── res/                       布局、样式、图标等资源
+└── AndroidManifest.xml
+```
+
+## 许可证
+
+本项目基于 [MIT License](LICENSE) 开源。

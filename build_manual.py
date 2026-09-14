@@ -63,7 +63,7 @@ def main():
 
     html = (
         '<!DOCTYPE html>\n<html lang="zh-CN"><head><meta charset="utf-8">\n'
-        "<title>双车遥控 App 软件使用手册</title>\n"
+        "<title>小车遥控 App 软件使用手册</title>\n"
         "<style>%s</style></head><body>\n%s\n</body></html>\n" % (CSS, body)
     )
     with io.open(HTML, "w", encoding="utf-8") as handle:

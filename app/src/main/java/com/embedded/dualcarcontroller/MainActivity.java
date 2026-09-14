@@ -349,7 +349,7 @@ public final class MainActivity extends Activity implements BleCarManager.Listen
         }
         if (snapshot.connecting) return;
         new AlertDialog.Builder(this)
-                .setTitle("断开 " + slot + "车")
+                .setTitle("断开 " + CarProtocol.slotDisplayName(slot))
                 .setMessage("断开前会先发送停止指令。")
                 .setPositiveButton("断开", (dialog, which) -> {
                     moving.put(slot, false);
@@ -398,7 +398,7 @@ public final class MainActivity extends Activity implements BleCarManager.Listen
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(420)));
 
         scanDialog = new AlertDialog.Builder(this)
-                .setTitle("连接 " + slot + "车")
+                .setTitle("连接 " + CarProtocol.slotDisplayName(slot))
                 .setView(content)
                 .setNeutralButton("重新扫描", null)
                 .setNegativeButton("关闭", (dialog, which) -> bleManager.stopScan())
@@ -502,7 +502,7 @@ public final class MainActivity extends Activity implements BleCarManager.Listen
         List<String> ready = new ArrayList<>();
         for (String slot : candidates) if (isReady(slot)) ready.add(slot);
         if (ready.isEmpty() && warn) {
-            Toast.makeText(this, "当前控制目标没有在线车辆", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "当前控制目标没有在线车轮", Toast.LENGTH_SHORT).show();
         }
         return ready;
     }
@@ -572,7 +572,7 @@ public final class MainActivity extends Activity implements BleCarManager.Listen
     private void renderSlot(String slot, TextView name, TextView status, TextView gear,
                             TextView motion, Button action, MaterialCardView card) {
         BleCarManager.SlotSnapshot snapshot = slots.get(slot);
-        name.setText(snapshot == null ? slot + "车" : snapshot.name);
+        name.setText(snapshot == null ? CarProtocol.slotDisplayName(slot) : snapshot.name);
         gear.setText(String.valueOf(gears.get(slot)));
         motion.setText(Boolean.TRUE.equals(moving.get(slot)) ? "保持" : "静止");
         if (snapshot == null) {

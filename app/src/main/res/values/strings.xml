@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">双车遥控</string>
+    <string name="app_name">小车遥控</string>
     <string name="bluetooth_ready">蓝牙就绪</string>
     <string name="bluetooth_unsupported">设备不支持 BLE</string>
     <string name="permission_required">需要蓝牙权限</string>
-    <string name="log_empty">连接车辆或发送命令后，这里会显示通信结果。</string>
+    <string name="log_empty">连接车轮或发送命令后，这里会显示通信结果。</string>
 </resources>

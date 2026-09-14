@@ -45,7 +45,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-medium"
                         android:letterSpacing="0.15"
-                        android:text="DUAL DRIVE"
+                        android:text="FRONT / REAR DRIVE"
                         android:textColor="@color/accent"
                         android:textSize="11sp" />
 
@@ -54,7 +54,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="sans-serif-condensed"
-                        android:text="双车遥控台"
+                        android:text="小车遥控台"
                         android:textColor="@color/text"
                         android:textSize="30sp"
                         android:textStyle="bold" />
@@ -63,7 +63,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="BLE 实时协同控制"
+                        android:text="BLE 实时同步控制"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -111,8 +111,8 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-                            <TextView style="@style/SectionTitle" android:text="车辆连接" />
-                            <TextView style="@style/SectionNote" android:text="分别选择两台 BLE 小车" />
+                            <TextView style="@style/SectionTitle" android:text="车轮连接" />
+                            <TextView style="@style/SectionNote" android:text="分别选择前轮与后轮的 BLE 设备" />
                         </LinearLayout>
 
                         <TextView
@@ -151,7 +151,7 @@
                                 android:orientation="vertical"
                                 android:padding="14dp">
 
-                                <TextView android:id="@+id/slot_a_name" style="@style/VehicleName" android:text="A车" />
+                                <TextView android:id="@+id/slot_a_name" style="@style/VehicleName" android:text="前轮" />
                                 <TextView android:id="@+id/slot_a_status" style="@style/VehicleStatus" android:text="●  未连接" />
 
                                 <LinearLayout
@@ -190,7 +190,7 @@
                                 android:orientation="vertical"
                                 android:padding="14dp">
 
-                                <TextView android:id="@+id/slot_b_name" style="@style/VehicleName" android:text="B车" />
+                                <TextView android:id="@+id/slot_b_name" style="@style/VehicleName" android:text="后轮" />
                                 <TextView android:id="@+id/slot_b_status" style="@style/VehicleStatus" android:text="●  未连接" />
 
                                 <LinearLayout
@@ -230,7 +230,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
                     <TextView style="@style/SectionTitle" android:text="控制目标" />
-                    <TextView style="@style/SectionNote" android:text="命令只发送给选中的在线车辆" />
+                    <TextView style="@style/SectionNote" android:text="命令只发送给选中的在线车轮" />
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
                         android:id="@+id/target_group"
@@ -244,15 +244,15 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/target_both"
                             style="@style/TargetOption"
-                            android:text="A+B 同步" />
+                            android:text="前后同步" />
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/target_a"
                             style="@style/TargetOption"
-                            android:text="仅 A车" />
+                            android:text="仅前轮" />
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/target_b"
                             style="@style/TargetOption"
-                            android:text="仅 B车" />
+                            android:text="仅后轮" />
                     </com.google.android.material.button.MaterialButtonToggleGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -274,7 +274,7 @@
                     <TextView
                         style="@style/SectionTitle"
                         android:layout_marginStart="4dp"
-                        android:text="车辆控制" />
+                        android:text="车轮控制" />
                     <TextView
                         style="@style/SectionNote"
                         android:layout_marginStart="4dp"
