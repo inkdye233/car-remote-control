@@ -2,8 +2,6 @@
 
 不依赖 HBuilderX、DCloud 云打包或第三方 BLE 库的原生 Android 应用。
 
-> **已知问题、修复记录与真机待验证清单见 [BUGLOG.md](BUGLOG.md)**（含审查中被推翻的误报，避免重复排查）。
-
 ## 环境
 
 - Android Studio: `E:\Program Files\Android\Android Studio`
